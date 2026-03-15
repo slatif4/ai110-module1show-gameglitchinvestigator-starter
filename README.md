@@ -55,7 +55,6 @@ in the New Game button fix — caught through live browser testing.
 
 ![Pytest Results](images/pytest.png)
 
-## 🚀 Stretch Features
 
 ## 🚀 Stretch Features
 
