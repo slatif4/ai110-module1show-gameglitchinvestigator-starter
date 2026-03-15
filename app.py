@@ -30,10 +30,9 @@ st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
 if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
-# FIXME: Logic breaks here — attempts starts at 1, display is off by one
+# FIX: Changed attempts init from 1 to 0 using Claude Agent mode — fixes off-by-one display
 if "attempts" not in st.session_state:
     st.session_state.attempts = 0
-# FIX: Changed attempts init from 1 to 0 using Claude Agent mode — fixes off-by-one display
 
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -46,11 +45,11 @@ if "history" not in st.session_state:
 
 st.subheader("Make a guess")
 
+# FIX: Replaced hardcoded 1-100 with {low} and {high} using Claude inline chat
 st.info(
     f"Guess a number between {low} and {high}. "
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
-# FIX: Replaced hardcoded 1-100 with {low} and {high} using Claude inline chat
 
 with st.expander("Developer Debug Info"):
     st.write("Secret:", st.session_state.secret)
@@ -72,6 +71,7 @@ with col2:
 with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
+# FIX: New Game now uses difficulty range and resets all session state using Claude Agent mode
 if new_game:
     st.session_state.attempts = 0
     st.session_state.secret = random.randint(low, high)
@@ -80,13 +80,20 @@ if new_game:
     st.session_state.history = []
     st.success("New game started.")
     st.rerun()
-# FIX: New Game now uses difficulty range and resets all session state using Claude Agent mode
 
 if st.session_state.status != "playing":
     if st.session_state.status == "won":
         st.success("You already won. Start a new game to play again.")
     else:
         st.error("Game over. Start a new game to try again.")
+
+    st.markdown("### Session Summary")
+    st.table([
+        {"Metric": "Total attempts used", "Value": st.session_state.attempts},
+        {"Metric": "All guesses made", "Value": ", ".join(str(g) for g in st.session_state.history)},
+        {"Metric": "Final score", "Value": st.session_state.score},
+    ])
+
     st.stop()
 
 if submit:
@@ -100,13 +107,28 @@ if submit:
     else:
         st.session_state.history.append(guess_int)
 
+        # FIX: Removed type-mangling block using Claude Agent mode — always pass secret as int
         secret = st.session_state.secret
-# FIX: Removed type-mangling block using Claude Agent mode — always pass secret as int
 
         outcome, message = check_guess(guess_int, secret)
 
         if show_hint:
-            st.warning(message)
+            if outcome == "Win":
+                st.success(message)
+            elif outcome == "Too High":
+                st.error(message)
+            else:
+                st.info(message)
+
+            distance = abs(guess_int - secret)
+            if distance <= 2:
+                st.write("🔥 Burning hot!")
+            elif distance <= 5:
+                st.write("♨️ Very warm!")
+            elif distance <= 10:
+                st.write("😐 Getting warmer")
+            else:
+                st.write("🧊 Ice cold!")
 
         st.session_state.score = update_score(
             current_score=st.session_state.score,
