@@ -57,4 +57,9 @@ in the New Game button fix — caught through live browser testing.
 
 ## 🚀 Stretch Features
 
-- [ ] [If you completed Challenge 4, insert Enhanced Game UI screenshot here]
+## 🚀 Stretch Features
+
+### Challenge 4: Enhanced Game UI
+Added color-coded hints, Hot/Cold emoji states, and win/loss summary.
+
+![Enhanced UI](images/ui_enhanced.png)
